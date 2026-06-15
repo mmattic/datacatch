@@ -1,51 +1,22 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
-const path = require('path');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_API_KEY
 );
 
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
 async function saveSearchHistory(keyword) {
   const record = {
     id: Date.now(),
     keyword,
-    searchTime: new Date().toISOString()
+    search_time: new Date().toISOString()
   };
-  
-  let searchHistory = [];
-  try {
-    const existingData = fs.readFileSync(path.join(dataDir, 'searchHistory.json'), 'utf-8');
-    searchHistory = JSON.parse(existingData);
-  } catch (e) {
-    searchHistory = [];
-  }
-  
-  searchHistory.push(record);
-  if (searchHistory.length > 100) {
-    searchHistory = searchHistory.slice(-100);
-  }
-  
-  fs.writeFileSync(
-    path.join(dataDir, 'searchHistory.json'),
-    JSON.stringify(searchHistory, null, 2)
-  );
   
   try {
     const { error } = await supabase
       .from('search_history')
-      .insert({
-        id: record.id,
-        keyword: record.keyword,
-        search_time: record.searchTime
-      });
+      .insert(record);
     
     if (error) {
       console.warn('Failed to save search history to Supabase:', error.message);
@@ -55,13 +26,8 @@ async function saveSearchHistory(keyword) {
   }
 }
 
-function getSearchHistory() {
-  try {
-    const data = fs.readFileSync(path.join(dataDir, 'searchHistory.json'), 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    return [];
-  }
+async function getSearchHistory() {
+  return getSearchHistoryFromSupabase();
 }
 
 async function getSearchHistoryFromSupabase() {
@@ -86,39 +52,15 @@ async function getSearchHistoryFromSupabase() {
 async function saveAnalysisReport(reportName, data) {
   const report = {
     id: Date.now(),
-    reportName,
+    report_name: reportName,
     data: JSON.stringify(data),
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   };
-  
-  let analysisReports = [];
-  try {
-    const existingData = fs.readFileSync(path.join(dataDir, 'analysisReports.json'), 'utf-8');
-    analysisReports = JSON.parse(existingData);
-  } catch (e) {
-    analysisReports = [];
-  }
-  
-  analysisReports.push(report);
-  
-  if (analysisReports.length > 50) {
-    analysisReports = analysisReports.slice(-50);
-  }
-  
-  fs.writeFileSync(
-    path.join(dataDir, 'analysisReports.json'),
-    JSON.stringify(analysisReports, null, 2)
-  );
   
   try {
     const { error } = await supabase
       .from('analysis_reports')
-      .insert({
-        id: report.id,
-        report_name: report.reportName,
-        data: report.data,
-        created_at: report.createdAt
-      });
+      .insert(report);
     
     if (error) {
       console.warn('Failed to save analysis report to Supabase:', error.message);
@@ -130,13 +72,8 @@ async function saveAnalysisReport(reportName, data) {
   return report;
 }
 
-function getAnalysisReports() {
-  try {
-    const data = fs.readFileSync(path.join(dataDir, 'analysisReports.json'), 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    return [];
-  }
+async function getAnalysisReports() {
+  return getAnalysisReportsFromSupabase();
 }
 
 async function getAnalysisReportsFromSupabase() {
