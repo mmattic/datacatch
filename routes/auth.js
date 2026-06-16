@@ -1,25 +1,31 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { getUserByUsername } = require('../services/userService');
 
 const router = express.Router();
 
-const ADMIN_USER = {
-  username: 'jcc',
-  password: '333666'
-};
-
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   
   if (!username || !password) {
     return res.status(400).json({ success: false, message: '请输入用户名和密码' });
   }
   
-  if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
+  try {
+    const user = await getUserByUsername(username);
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: '用户名或密码错误' });
+    }
+    
+    if (user.password !== password) {
+      return res.status(401).json({ success: false, message: '用户名或密码错误' });
+    }
+    
     const token = jwt.sign(
-      { username: ADMIN_USER.username, role: 'admin' },
+      { username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -28,11 +34,12 @@ router.post('/login', (req, res) => {
       success: true,
       message: '登录成功',
       token,
-      user: { username: ADMIN_USER.username, role: 'admin' }
+      user: { username: user.username, role: user.role }
     });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ success: false, message: '登录失败，请稍后重试' });
   }
-  
-  res.status(401).json({ success: false, message: '用户名或密码错误' });
 });
 
 router.get('/verify', (req, res) => {
