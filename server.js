@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -20,8 +21,10 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/analysis', require('./routes/analysis'));
 app.use('/api/exports', require('./routes/exports'));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Cdiscount选品工具API服务运行中' });
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
 });
 
 app.listen(PORT, () => {
