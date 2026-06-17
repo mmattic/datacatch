@@ -6,16 +6,13 @@ async function getUserByUsername(username) {
       .from('users')
       .select('*')
       .eq('username', username)
-      .single();
+      .limit(1);
     
     if (error) {
-      if (error.code === 'PGRST205') {
-        throw new Error('Users table not found in Supabase. Please create the table first.');
-      }
-      throw error;
+      throw new Error(`Supabase error: ${error.message}`);
     }
     
-    return data;
+    return data && data.length > 0 ? data[0] : null;
   } catch (e) {
     throw new Error(`Error fetching user: ${e.message}`);
   }
@@ -35,7 +32,7 @@ async function createUser(username, password, role = 'user') {
       .single();
     
     if (error) {
-      throw error;
+      throw new Error(`Supabase error: ${error.message}`);
     }
     
     return data;

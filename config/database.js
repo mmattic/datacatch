@@ -27,10 +27,6 @@ async function saveSearchHistory(keyword) {
 }
 
 async function getSearchHistory() {
-  return getSearchHistoryFromSupabase();
-}
-
-async function getSearchHistoryFromSupabase() {
   try {
     const { data, error } = await supabase
       .from('search_history')
@@ -38,7 +34,7 @@ async function getSearchHistoryFromSupabase() {
       .order('search_time', { ascending: false });
     
     if (error) {
-      console.warn('Failed to fetch search history from Supabase:', error.message);
+      console.warn('Failed to fetch search history:', error.message);
       return [];
     }
     
@@ -63,7 +59,7 @@ async function saveAnalysisReport(reportName, data) {
       .insert(report);
     
     if (error) {
-      console.warn('Failed to save analysis report to Supabase:', error.message);
+      console.warn('Failed to save report:', error.message);
     }
   } catch (e) {
     console.warn('Supabase connection error:', e.message);
@@ -73,10 +69,6 @@ async function saveAnalysisReport(reportName, data) {
 }
 
 async function getAnalysisReports() {
-  return getAnalysisReportsFromSupabase();
-}
-
-async function getAnalysisReportsFromSupabase() {
   try {
     const { data, error } = await supabase
       .from('analysis_reports')
@@ -84,7 +76,7 @@ async function getAnalysisReportsFromSupabase() {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.warn('Failed to fetch analysis reports from Supabase:', error.message);
+      console.warn('Failed to fetch reports:', error.message);
       return [];
     }
     
@@ -95,25 +87,10 @@ async function getAnalysisReportsFromSupabase() {
   }
 }
 
-async function verifyConnection() {
-  try {
-    const { error } = await supabase.from('search_history').select('*').limit(1);
-    if (error && error.code !== 'PGRST205') {
-      return { success: false, message: error.message };
-    }
-    return { success: true, message: 'Successfully connected to Supabase!' };
-  } catch (e) {
-    return { success: false, message: e.message };
-  }
-}
-
 module.exports = {
   supabase,
   saveSearchHistory,
   getSearchHistory,
-  getSearchHistoryFromSupabase,
   saveAnalysisReport,
-  getAnalysisReports,
-  getAnalysisReportsFromSupabase,
-  verifyConnection
+  getAnalysisReports
 };
