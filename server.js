@@ -27,6 +27,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'API服务运行正常' });
 });
 
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
+});
+
 async function startServer() {
   try {
     await initializeAdminUser();
@@ -52,5 +58,4 @@ process.on('uncaughtException', (err) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled rejection:', reason);
-});
+  console.error('

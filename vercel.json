@@ -1,10 +1,16 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build && cd .. && npm install",
-  "functions": {
-    "server.js": {
-      "runtime": "@vercel/node@3.2.10"
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node@3.2.10",
+      "config": {
+        "includeFiles": [
+          "frontend/build/**"
+        ]
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -13,5 +19,7 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "installCommand": "npm install && cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build && cd .."
 }
